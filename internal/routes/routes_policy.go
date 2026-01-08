@@ -49,7 +49,7 @@ func CreatePolicyApiGroup(group *gin.RouterGroup, app *config.AppData) *gin.Rout
 
 func listUserRules(app *config.AppData, user *auth.UserClaims, is_super_admin bool) ([]storage.PolicyRule, error) {
 	// Get all rules from storage
-	rules, err := app.Storage.GetAll()
+	rules, err := app.Storage.PolicyGetAll()
 	if err != nil {
 		// Log the error (not shown here)
 		return nil, err
@@ -143,7 +143,7 @@ func createPolicyRule(app *config.AppData) gin.HandlerFunc {
 			Description:      req.Description,
 		}
 
-		createdRule, err := app.Storage.Create(&newRule)
+		createdRule, err := app.Storage.PolicyCreate(&newRule)
 		if err != nil {
 			// Log the error
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create rule"})
@@ -202,7 +202,7 @@ func updatePolicyRule(app *config.AppData) gin.HandlerFunc {
 		}
 
 		// Check if rule exists before update attempt
-		existingRule, err := app.Storage.GetByID(id)
+		existingRule, err := app.Storage.PolicyGetByID(id)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "Rule not found"})
@@ -218,7 +218,7 @@ func updatePolicyRule(app *config.AppData) gin.HandlerFunc {
 		existingRule.TargetUserFilter = req.TargetUserFilter
 		existingRule.Description = req.Description
 
-		updatedRule, err := app.Storage.Update(existingRule)
+		updatedRule, err := app.Storage.PolicyUpdate(existingRule)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "Rule not found"})
@@ -260,7 +260,7 @@ func deletePolicyRule(app *config.AppData) gin.HandlerFunc {
 			return
 		}
 
-		if err := app.Storage.Delete(id); err != nil {
+		if err := app.Storage.PolicyDelete(id); err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "Rule not found"})
 				return

@@ -60,7 +60,7 @@ func NewStorage(dbType string, connectionString string) (*Storage, error) {
 }
 
 // -- Insert dummy data function (optional) --
-func (s *Storage) InsertDummyData() error {
+func (s *Storage) PolicyInsertDummyData() error {
 	dummyRules := []PolicyRule{
 		{ZonePattern: "%u.users.dhbw.cloud", ZoneSoa: "users.dhbw.cloud", TargetUserFilter: "*@dhbw.de", Description: "Automatic personal zones for DHBW users", CreatedAt: time.Now().Add(-24 * time.Hour)},
 		{ZonePattern: "project.dhbw.cloud", ZoneSoa: "project.dhbw.cloud", TargetUserFilter: "*@dhbw.de", Description: "All DHBW users can manage a common project zone", CreatedAt: time.Now().Add(-24 * time.Hour)},
@@ -68,7 +68,7 @@ func (s *Storage) InsertDummyData() error {
 	}
 
 	for _, rule := range dummyRules {
-		_, err := s.Create(&rule)
+		_, err := s.PolicyCreate(&rule)
 		if err != nil {
 			return fmt.Errorf("storage.InsertDummyData: Failed to insert dummy data: %w", err)
 		}
@@ -78,8 +78,8 @@ func (s *Storage) InsertDummyData() error {
 
 // --- CRUD Operations for PolicyRule ---
 
-// Create inserts a new PolicyRule into the database.
-func (s *Storage) Create(rule *PolicyRule) (*PolicyRule, error) {
+// PolicyCreate inserts a new PolicyRule into the database.
+func (s *Storage) PolicyCreate(rule *PolicyRule) (*PolicyRule, error) {
 	// Set creation timestamp manually if not using GORM's default fields
 	if rule.CreatedAt.IsZero() {
 		rule.CreatedAt = time.Now()
@@ -93,8 +93,8 @@ func (s *Storage) Create(rule *PolicyRule) (*PolicyRule, error) {
 	return rule, nil
 }
 
-// GetAll retrieves all PolicyRules from the database.
-func (s *Storage) GetAll() ([]PolicyRule, error) {
+// PolicyGetAll retrieves all PolicyRules from the database.
+func (s *Storage) PolicyGetAll() ([]PolicyRule, error) {
 	var rules []PolicyRule
 	// Order by ID or Creation Time for consistent results
 	result := s.db.Order("id asc").Find(&rules)
@@ -104,8 +104,8 @@ func (s *Storage) GetAll() ([]PolicyRule, error) {
 	return rules, nil
 }
 
-// GetByID retrieves a single PolicyRule by its ID.
-func (s *Storage) GetByID(id int64) (*PolicyRule, error) {
+// PolicyGetByID retrieves a single PolicyRule by its ID.
+func (s *Storage) PolicyGetByID(id int64) (*PolicyRule, error) {
 	var rule PolicyRule
 	result := s.db.First(&rule, id)
 
@@ -118,9 +118,9 @@ func (s *Storage) GetByID(id int64) (*PolicyRule, error) {
 	return &rule, nil
 }
 
-// Update modifies an existing PolicyRule.
+// PolicyUpdate modifies an existing PolicyRule.
 // The rule parameter should contain the ID of the rule to update and the new values.
-func (s *Storage) Update(rule *PolicyRule) (*PolicyRule, error) {
+func (s *Storage) PolicyUpdate(rule *PolicyRule) (*PolicyRule, error) {
 	// GORM will use the primary key (ID) of the struct to determine which record to update.
 	// We use Select to specify only the fields we allow the user to modify.
 	result := s.db.Model(rule).Select("ZonePattern", "TargetUserFilter", "Description").Updates(rule)
@@ -132,7 +132,7 @@ func (s *Storage) Update(rule *PolicyRule) (*PolicyRule, error) {
 	if result.RowsAffected == 0 {
 		// Double check if the record was actually found and updated
 		// Fetch the record again to return a complete, updated object (optional but safer)
-		if _, err := s.GetByID(rule.ID); err != nil {
+		if _, err := s.PolicyGetByID(rule.ID); err != nil {
 			if err == gorm.ErrRecordNotFound {
 				return nil, gorm.ErrRecordNotFound
 			}
@@ -144,8 +144,8 @@ func (s *Storage) Update(rule *PolicyRule) (*PolicyRule, error) {
 	return rule, nil
 }
 
-// Delete removes a PolicyRule from the database by its ID.
-func (s *Storage) Delete(id int64) error {
+// PolicyDelete removes a PolicyRule from the database by its ID.
+func (s *Storage) PolicyDelete(id int64) error {
 	// Delete the record matching the ID
 	result := s.db.Delete(&PolicyRule{}, id)
 

@@ -55,7 +55,7 @@ func RunApplication() {
 
 	// If requested, insert dummy data into the database
 	if appConfig.Storage.AddDummyData {
-		err = storage.InsertDummyData()
+		err = storage.PolicyInsertDummyData()
 		if err != nil {
 			log.Fatalf("Failed to insert dummy data into the database: %v", err)
 		}
